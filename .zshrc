@@ -201,8 +201,8 @@ dev-tag() {
   if [[ $# -eq 1 ]] ; then
      echo "Tagging and pushing with dev-ct-$1-$GIT_TIMESTAMP"
      sleep 3
-     git tag dev-ct-$1-$GIT_TIMESTAMP
-     git push origin dev-ct-$1-$GIT_TIMESTAMP
+     git tag dev-$1-$GIT_TIMESTAMP
+     git push origin dev-$1-$GIT_TIMESTAMP
   else
      echo "Error: requires exactly one argument"
   fi
