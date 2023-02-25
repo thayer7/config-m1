@@ -99,6 +99,8 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+# poetry
+export PATH="/Users/cthayer/.local/bin:$PATH"
 
 # homebrew
 export PATH="/usr/local/sbin:$PATH"
@@ -154,9 +156,9 @@ alias gprunesquashmerged='git checkout -q master && \
         [[ $(git cherry master \
         $(git commit-tree $(git rev-parse $branch^{tree}) -p $mergeBase -m _)) == "-"* ]] && \
         git branch -D $branch; done'
-alias gcp='gcloud config configurations activate'
 alias util='kubectl get nodes --no-headers | awk '\''{print $1}'\'' | xargs -I {} sh -c '\''echo {} ; kubectl describe node {} | grep Allocated -A 5 | grep -ve Event -ve Allocated -ve percent -ve -- ; echo '\'''
 alias gotosleep="pmset sleepnow"
+alias duckdb="/Applications/duckdb ; exit;"
 
 # zsh-completions
 if type brew &>/dev/null; then
@@ -173,7 +175,7 @@ source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 # kubectl
 source <(kubectl completion zsh)
 
-# prompt
+# add starship to prompt
 eval "$(starship init zsh)"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
@@ -192,6 +194,16 @@ zdg() {
   DIR=`find * -maxdepth 0 -type d -print 2> /dev/null | fzf-tmux` \
     && cd "$DIR"
 }
+zdes() {
+  cd $HOME/zelus/esports
+  DIR=`find * -maxdepth 0 -type d -print 2> /dev/null | fzf-tmux` \
+    && cd "$DIR"
+}
+zdfb() {
+  cd $HOME/zelus/football
+  DIR=`find * -maxdepth 0 -type d -print 2> /dev/null | fzf-tmux` \
+    && cd "$DIR"
+}
 zgcp() {
   PROJECT=$(gcloud config configurations list --format json | jq -r ".[] | .name" | fzf-tmux)
   gcloud config configurations activate "$PROJECT"
@@ -199,13 +211,37 @@ zgcp() {
 dev-tag() {
   GIT_TIMESTAMP=$(date -u "+%Y%m%d.%H%M%S");
   if [[ $# -eq 1 ]] ; then
-     echo "Tagging and pushing with dev-ct-$1-$GIT_TIMESTAMP"
+     echo "Tagging and pushing with dev-$1-$GIT_TIMESTAMP"
      sleep 3
      git tag dev-$1-$GIT_TIMESTAMP
      git push origin dev-$1-$GIT_TIMESTAMP
   else
      echo "Error: requires exactly one argument"
   fi
+}
+glogone() {
+    DEFAULT=10
+    NUM_COMMITS="${1:-$DEFAULT}"
+    git --no-pager log --oneline -n $NUM_COMMITS
+}
+killpods() {
+    # app=bkrdp-ss, bkrdp-ngss, bkie
+    # model=basketball-adjusted-plus-minus
+    kubectl delete pods -l $1 
+}
+killjobs() {
+    # app=bkrdp-ss, bkrdp-ngss, bkie
+    # model=basketball-adjusted-plus-minus
+    kubectl delete jobs -l $1
+}
+wpod() {
+    watch -n $1 "kubectl get pod | grep $2"
+}
+wjob() {
+    watch -n $1 "kubectl get job | grep $2"
+}
+zmvbbd() {
+    kubectl port-forward svc/zelus-model-versioner -n zelus-model-versioner :80 | cloud_sql_proxy -instances=zelus-basketball-dev:us-central1:basketball-data=tcp:5432
 }
 dev-airflow() {
   if [[ $# -eq 1 ]] ; then
@@ -227,7 +263,6 @@ dev-airflow() {
      echo "Error: requires exactly one argument"
   fi
 }
-
 # Base16 Shell
 BASE16_SHELL="$HOME/.config/base16-shell/"
 [ -n "$PS1" ] && \
